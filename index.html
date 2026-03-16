@@ -362,7 +362,7 @@ function handlePaste(e) {
 }
 
 // ---- TRANSLATE ----
-async function translate() {
+async function runTranslate() {
   const rawInput = document.getElementById('inputText').value;
   if (!rawInput.trim() && !inputImageB64) { showError('Inserisci testo, carica un file o incolla un\'immagine.'); return; }
   hideError(); resetOutput();
