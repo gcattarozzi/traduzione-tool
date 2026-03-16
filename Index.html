@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Traduzione EN ↔ IT</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6f8; min-height: 100vh; padding: 18px 12px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  /* HEADER */
+  .header { background: #1a2e4a; color: #fff; border-radius: 8px; padding: 12px 18px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .header-title { font-weight: 700; font-size: 1.05em; letter-spacing: 0.3px; }
+  .header-sub { font-size: 0.72em; opacity: 0.65; margin-top: 2px; }
+  .header-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* SWITCH BUTTONS */
+  .switch-group { display: flex; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
+  .switch-btn { padding: 5px 12px; border: none; background: transparent; color: #fff; font-weight: 400; font-size: 0.8em; cursor: pointer; letter-spacing: 0.3px; transition: background 0.15s; }
+  .switch-btn.active { background: rgba(255,255,255,0.25); font-weight: 700; }
+  .model-desc { font-size: 0.7em; opacity: 0.55; color: #fff; }
+
+  /* ACTION BUTTONS */
+  .btn-traduci { background: #2a6496; color: #fff; border: none; border-radius: 6px; padding: 6px 18px; font-weight: 600; font-size: 0.82em; cursor: pointer; letter-spacing: 0.3px; }
+  .btn-stop { background: #c0392b; color: #fff; border: none; border-radius: 6px; padding: 6px 18px; font-weight: 600; font-size: 0.82em; cursor: pointer; letter-spacing: 0.3px; }
+
+  /* GRID */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* PANELS */
+  .panel { background: #fff; border-radius: 8px; border: 2px solid #dde1e8; overflow: hidden; display: flex; flex-direction: column; transition: border-color 0.2s; }
+  .panel.dragging { border-color: #3a78c9; }
+  .panel-header { background: #f0f2f5; padding: 8px 12px; border-bottom: 1px solid #dde1e8; font-weight: 600; font-size: 0.83em; color: #444; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .panel-header-blue { background: #eef3fb; color: #3a5a8c; }
+  .panel-hint { padding: 4px 12px; background: #eef3fb; font-size: 0.74em; color: #3a5a8c; border-bottom: 1px solid #dde1e8; }
+  .panel-drag-hint { background: #eef3fb; padding: 6px; border-bottom: 1px solid #c8d8f0; font-size: 0.76em; color: #3a5a8c; text-align: center; font-weight: 600; }
+  .panel-footer { padding: 8px 12px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; }
+  .panel-footer-note { font-size: 0.69em; color: #bbb; }
+
+  /* IMAGE PREVIEW */
+  .img-preview { padding: 8px 12px; background: #fafbfc; border-bottom: 1px solid #eee; text-align: center; }
+  .img-preview img { max-height: 120px; max-width: 100%; border-radius: 4px; border: 1px solid #ddd; }
+
+  /* TEXTAREA */
+  textarea { flex: 1; min-height: 290px; padding: 11px; border: none; outline: none; resize: vertical; font-size: 0.85em; line-height: 1.65; font-family: inherit; color: #222; background: #fff; width: 100%; }
+  textarea.readonly { background: #f8f9fa; }
+
+  /* OUTPUT */
+  .output-right { display: flex; flex-direction: column; gap: 10px; }
+  .output-trad { flex: 2; }
+  .output-sint { }
+  .output-body { padding: 11px; min-height: 200px; font-size: 0.85em; line-height: 1.7; color: #222; overflow-y: auto; max-height: 330px; }
+  .output-sint-body { padding: 11px; min-height: 75px; font-size: 0.83em; line-height: 1.65; color: #333; }
+  .placeholder { color: #bbb; font-style: italic; }
+  .streaming-badge { font-weight: 400; color: #3a78c9; font-size: 0.9em; }
+
+  /* SMALL BUTTONS */
+  .btn-sm { font-size: 0.73em; padding: 2px 8px; border: 1px solid #aab; border-radius: 4px; background: #fff; cursor: pointer; color: #445; }
+  .btn-sm-red { border-color: #ddd; color: #888; }
+  .btn-file { font-size: 0.73em; padding: 2px 8px; border: 1px solid #aab; border-radius: 4px; background: #fff; cursor: pointer; color: #445; }
+
+  /* ERROR */
+  .error { margin-top: 10px; background: #fff3f3; border: 1px solid #f5c6c6; border-radius: 6px; padding: 8px 14px; color: #c0392b; font-size: 0.83em; }
+
+  /* FOOTER */
+  .footer { margin-top: 10px; font-size: 0.7em; color: #bbb; text-align: center; }
+
+  /* RENDERED TEXT */
+  .rt-h1 { margin: 0.7em 0 0.25em; font-size: 1.1em; font-weight: 700; }
+  .rt-h2 { margin: 0.6em 0 0.2em; font-size: 1.05em; font-weight: 700; }
+  .rt-h3 { margin: 0.5em 0 0.15em; font-size: 1em; font-weight: 700; }
+  .rt-li { padding-left: 1.2em; margin-bottom: 0.1em; }
+  .rt-p  { margin-bottom: 0.1em; }
+  .rt-sp { height: 0.5em; }
+</style>
+</head>
+<body>
+<!-- API KEY OVERLAY -->
+<div id="apiOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:10px;padding:28px 32px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+    <div style="font-weight:700;font-size:1.1em;color:#1a2e4a;margin-bottom:6px;">🔑 Inserisci la tua API Key</div>
+    <div style="font-size:0.82em;color:#666;margin-bottom:16px;">La chiave viene salvata solo nel tuo browser e non viene mai condivisa. Puoi ottenerla su <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.</div>
+    <input id="apiInput" type="password" placeholder="sk-ant-api03-..."
+      style="width:100%;padding:9px 11px;border:1px solid #ccd;border-radius:6px;font-size:0.9em;outline:none;box-sizing:border-box;"
+      onkeydown="if(event.key==='Enter') saveApiKeyFromDialog()"/>
+    <div id="apiKeyError" style="display:none;color:#c0392b;font-size:0.78em;margin-top:6px;">⚠️ La chiave deve iniziare con <strong>sk-ant-</strong></div>
+    <button onclick="saveApiKeyFromDialog()"
+      style="margin-top:14px;width:100%;background:#1a2e4a;color:#fff;border:none;border-radius:6px;padding:9px;font-weight:600;font-size:0.9em;cursor:pointer;">
+      ✓ Salva e continua
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-title" id="headerTitle">TRADUZIONE EN / IT</div>
+      <div class="header-sub">Testi normativi · tecnici · finanziari</div>
+    </div>
+    <div class="header-controls">
+      <!-- Traduci / Stop -->
+      <button class="btn-traduci" id="btnTraduci" onclick="translate()">▶ TRADUCI</button>
+      <button class="btn-stop" id="btnStop" onclick="stopTranslation()" style="display:none">⏹ STOP</button>
+
+      <!-- Direction switch -->
+      <div class="switch-group" id="dirSwitch">
+        <button class="switch-btn active" id="btnEN" onclick="setDirection('EN→IT')">🇬🇧→🇮🇹</button>
+        <button class="switch-btn" id="btnIT" onclick="setDirection('IT→EN')">🇮🇹→🇬🇧</button>
+      </div>
+
+      <!-- Model switch -->
+      <div class="switch-group" id="modelSwitch">
+        <button class="switch-btn" id="mHaiku" onclick="setModel('claude-haiku-4-5-20251001','Haiku')">Haiku</button>
+        <button class="switch-btn active" id="mSonnet" onclick="setModel('claude-sonnet-4-20250514','Sonnet')">Sonnet</button>
+        <button class="switch-btn" id="mOpus" onclick="setModel('claude-opus-4-20250514','Opus')">Opus</button>
+      </div>
+      <span class="model-desc" id="modelDesc">Bilanciato</span>
+          <button onclick="resetApiKey()" title="Cambia API key"
+            style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:5px;padding:4px 9px;font-size:0.72em;cursor:pointer;">🔑 API Key</button>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <!-- INPUT PANEL -->
+    <div class="panel" id="inputPanel"
+      ondragover="onDragOver(event)" ondragleave="onDragLeave()" ondrop="onDrop(event)">
+      <div class="panel-header">
+        <span id="srcLabel">ORIGINALE (EN) 🇬🇧</span>
+        <div style="display:flex;gap:5px">
+          <button class="btn-file" onclick="document.getElementById('fileInput').click()">📎 File</button>
+          <input type="file" id="fileInput" accept=".txt,.pdf" style="display:none" onchange="handleFile(event)"/>
+          <button class="btn-sm btn-sm-red" id="btnReset" onclick="reset()" style="display:none">✕</button>
+        </div>
+      </div>
+      <div class="panel-drag-hint" id="dragHint" style="display:none">📂 Rilascia il file qui</div>
+      <div class="panel-hint" id="fileHint" style="display:none"></div>
+      <div class="img-preview" id="imgPreview" style="display:none"><img id="imgThumb" src="" alt="preview"/></div>
+      <textarea id="inputText"
+        placeholder="Incolla testo inglese...&#10;&#10;• Trascina un file PDF o TXT&#10;• Incolla un'immagine con testo (Ctrl+V)"
+        oninput="onInput()" onpaste="handlePaste(event)"></textarea>
+      <div class="panel-footer">
+        <span class="panel-footer-note">Drag & drop · Ctrl+V immagine · TXT/PDF</span>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-right">
+      <!-- Traduzione -->
+      <div class="panel output-trad">
+        <div class="panel-header">
+          <span id="tradLabel">TRADUZIONE (IT) 🇮🇹 <span class="streaming-badge" id="streamBadge" style="display:none">● streaming…</span></span>
+          <button class="btn-sm" id="btnCopyTrad" onclick="copySection('trad')" style="display:none">📋 Copia</button>
+        </div>
+        <div class="output-body" id="outputTrad"><span class="placeholder">La traduzione apparirà qui.</span></div>
+      </div>
+      <!-- Sintesi -->
+      <div class="panel">
+        <div class="panel-header panel-header-blue">
+          <span id="sintLabel">📝 SINTESI</span>
+          <button class="btn-sm" id="btnCopySint" onclick="copySection('sint')" style="display:none">📋 Copia</button>
+        </div>
+        <div class="output-sint-body" id="outputSint"><span class="placeholder">La sintesi apparirà qui.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="error" id="errorBox" style="display:none"></div>
+  <div class="footer" id="footerNote">Powered by Claude Sonnet · Streaming attivo · Preferenze salvate automaticamente</div>
+</div>
+
+<script>
+// ===================== CONFIGURAZIONE =====================
+function getApiKey() { return localStorage.getItem('traduzione_api_key') || ''; }
+function saveApiKey(k) { localStorage.setItem('traduzione_api_key', k.trim()); }
+// ==========================================================
+
+const TERMS_EN = `default, facilities, grade, pool, policy, additional drawings, performing, past due, UTP, doubtful, pre-doubtful, predoubtful, forborne, time-to-workout, multiplier, maximum recovery periods, maximum recovery period, limitations, incomplete recovery, downturn, economic downturn, new DoD, obligation, finding, repossessed, haircut, probation period, artificial cash flows, collateral, massive disposals, reference value, general estimation error, adjustments, Corporate, Large Corporate, Retail, long-run average, long-run average LGD, severity, LGD Downturn, Downturn LGD, Reference Value, Out Of Sample, OOS, Out Of Time, OOT, Overfitting, bootstrapping, Accuracy, area under the curve, AUC, UFCP, Delinquency, Cured, Not Cured`;
+
+const SYSTEM_EN_IT = `Sei un traduttore specializzato in testi normativi, tecnici e finanziari dall'inglese all'italiano.
+REGOLE:
+1. Mantieni la stessa formattazione del testo originale.
+2. Usa uno stile formale e coerente con il linguaggio normativo e tecnico-finanziario.
+3. NON tradurre questi termini tecnici: ${TERMS_EN}
+4. Gli acronimi LGD, PD, EAD, SE e DoD assumono genere FEMMINILE in italiano: la LGD, la PD, la EAD, la SE, la DoD.
+STRUTTURA OUTPUT:
+## TRADUZIONE
+[testo tradotto]
+## SINTESI
+[sintesi concisa]`;
+
+const SYSTEM_IT_EN = `You are a specialized translator for normative, technical and financial texts from Italian to English.
+RULES:
+1. Maintain original formatting.
+2. Use formal style consistent with normative and technical-financial language.
+3. Keep these terms in English as-is: ${TERMS_EN}
+4. Acronyms LGD, PD, EAD, SE, DoD used as-is without articles.
+OUTPUT STRUCTURE:
+## TRANSLATION
+[translated text]
+## SUMMARY
+[concise summary]`;
+
+const MODELS = {
+  'claude-haiku-4-5-20251001': { label: 'Haiku', desc: 'Veloce' },
+  'claude-sonnet-4-20250514':  { label: 'Sonnet', desc: 'Bilanciato' },
+  'claude-opus-4-20250514':    { label: 'Opus', desc: 'Massima qualità' },
+};
+
+const PREFS_KEY = 'traduzione_prefs';
+
+let direction = 'EN→IT';
+let modelId   = 'claude-sonnet-4-20250514';
+let inputImageB64 = null;
+let isPdf = false;
+let abortCtrl = null;
+let tradText = '';
+let sintText = '';
+
+// ---- PREFS ----
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+    if (p.direction) setDirection(p.direction, false);
+    if (p.modelId)   setModel(p.modelId, MODELS[p.modelId]?.label || 'Sonnet', false);
+  } catch(_) {}
+}
+function savePrefs() {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify({ direction, modelId })); } catch(_) {}
+}
+
+// ---- DIRECTION ----
+function setDirection(d, save=true) {
+  direction = d;
+  document.getElementById('btnEN').classList.toggle('active', d === 'EN→IT');
+  document.getElementById('btnIT').classList.toggle('active', d === 'IT→EN');
+  const isEN = d === 'EN→IT';
+  document.getElementById('headerTitle').textContent = isEN ? 'TRADUZIONE EN / IT' : 'TRADUZIONE IT / EN';
+  document.getElementById('srcLabel').textContent    = isEN ? 'ORIGINALE (EN) 🇬🇧' : 'ORIGINALE (IT) 🇮🇹';
+  document.getElementById('tradLabel').innerHTML     = isEN ? 'TRADUZIONE (IT) 🇮🇹 <span class="streaming-badge" id="streamBadge" style="display:none">● streaming…</span>' : 'TRADUZIONE (EN) 🇬🇧 <span class="streaming-badge" id="streamBadge" style="display:none">● streaming…</span>';
+  document.getElementById('sintLabel').textContent   = isEN ? '📝 SINTESI' : '📝 SUMMARY';
+  const ta = document.getElementById('inputText');
+  ta.placeholder = isEN
+    ? 'Incolla testo inglese...\n\n• Trascina un file PDF o TXT\n• Incolla un\'immagine con testo (Ctrl+V)'
+    : 'Incolla testo italiano...\n\n• Trascina un file PDF o TXT\n• Incolla un\'immagine con testo (Ctrl+V)';
+  if (save) { savePrefs(); resetOutput(); }
+}
+
+// ---- MODEL ----
+function setModel(id, label, save=true) {
+  modelId = id;
+  ['mHaiku','mSonnet','mOpus'].forEach(b => document.getElementById(b).classList.remove('active'));
+  const map = { 'claude-haiku-4-5-20251001':'mHaiku','claude-sonnet-4-20250514':'mSonnet','claude-opus-4-20250514':'mOpus' };
+  if (map[id]) document.getElementById(map[id]).classList.add('active');
+  document.getElementById('modelDesc').textContent = MODELS[id]?.desc || '';
+  document.getElementById('footerNote').textContent = `Powered by Claude ${MODELS[id]?.label || label} · Streaming attivo · Preferenze salvate automaticamente`;
+  if (save) savePrefs();
+}
+
+// ---- INPUT ----
+function onInput() { inputImageB64 = null; isPdf = false; showReset(); }
+function showReset() {
+  const has = document.getElementById('inputText').value || inputImageB64;
+  document.getElementById('btnReset').style.display = has ? '' : 'none';
+}
+
+function reset() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('inputText').readOnly = false;
+  document.getElementById('inputText').classList.remove('readonly');
+  inputImageB64 = null; isPdf = false;
+  document.getElementById('fileHint').style.display = 'none';
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('btnReset').style.display = 'none';
+  resetOutput();
+}
+
+function resetOutput() {
+  tradText = ''; sintText = '';
+  document.getElementById('outputTrad').innerHTML = '<span class="placeholder">La traduzione apparirà qui.</span>';
+  document.getElementById('outputSint').innerHTML = '<span class="placeholder">La sintesi apparirà qui.</span>';
+  document.getElementById('btnCopyTrad').style.display = 'none';
+  document.getElementById('btnCopySint').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+// ---- FILE ----
+async function handleFile(e) { await processFile(e.target.files[0]); }
+async function processFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const hint = document.getElementById('fileHint');
+  hint.textContent = (ext === 'pdf' ? '📄 ' : '📄 ') + file.name;
+  hint.style.display = '';
+  document.getElementById('btnReset').style.display = '';
+  document.getElementById('imgPreview').style.display = 'none';
+  inputImageB64 = null;
+
+  if (ext === 'txt') {
+    const text = await file.text();
+    document.getElementById('inputText').value = text;
+    document.getElementById('inputText').readOnly = false;
+    document.getElementById('inputText').classList.remove('readonly');
+    isPdf = false;
+  } else if (ext === 'pdf') {
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById('inputText').value = '__PDF__' + reader.result.split(',')[1];
+      document.getElementById('inputText').readOnly = true;
+      document.getElementById('inputText').classList.add('readonly');
+      isPdf = true;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    showError('Formato non supportato. Usa TXT o PDF.');
+  }
+}
+
+// ---- DRAG & DROP ----
+function onDragOver(e) { e.preventDefault(); document.getElementById('inputPanel').classList.add('dragging'); document.getElementById('dragHint').style.display = ''; }
+function onDragLeave()  { document.getElementById('inputPanel').classList.remove('dragging'); document.getElementById('dragHint').style.display = 'none'; }
+function onDrop(e)      { e.preventDefault(); onDragLeave(); processFile(e.dataTransfer.files[0]); }
+
+// ---- PASTE IMAGE ----
+function handlePaste(e) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width; canvas.height = img.height;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          inputImageB64 = canvas.toDataURL('image/png').split(',')[1];
+          document.getElementById('imgThumb').src = 'data:image/png;base64,' + inputImageB64;
+          document.getElementById('imgPreview').style.display = '';
+          const hint = document.getElementById('fileHint');
+          hint.textContent = '🖼️ immagine incollata';
+          hint.style.display = '';
+          document.getElementById('inputText').value = '';
+          document.getElementById('inputText').readOnly = true;
+          document.getElementById('inputText').classList.add('readonly');
+          isPdf = false;
+          document.getElementById('btnReset').style.display = '';
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(blob);
+      return;
+    }
+  }
+}
+
+// ---- TRANSLATE ----
+async function translate() {
+  const rawInput = document.getElementById('inputText').value;
+  if (!rawInput.trim() && !inputImageB64) { showError('Inserisci testo, carica un file o incolla un\'immagine.'); return; }
+  hideError(); resetOutput();
+  document.getElementById('btnTraduci').style.display = 'none';
+  document.getElementById('btnStop').style.display = '';
+  const sb = document.getElementById('streamBadge');
+  if (sb) sb.style.display = '';
+
+  const isEN = direction === 'EN→IT';
+  const systemPrompt = isEN ? SYSTEM_EN_IT : SYSTEM_IT_EN;
+  const userMsg = isEN
+    ? 'Traduci il seguente contenuto dall\'inglese all\'italiano seguendo le istruzioni del system prompt.'
+    : 'Traduci il seguente contenuto dall\'italiano all\'inglese seguendo le istruzioni del system prompt.';
+
+  let msgContent;
+  if (inputImageB64) {
+    msgContent = [
+      { type: 'image', source: { type: 'base64', media_type: 'image/png', data: inputImageB64 } },
+      { type: 'text', text: userMsg }
+    ];
+  } else if (isPdf) {
+    msgContent = [
+      { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: rawInput.replace('__PDF__','') } },
+      { type: 'text', text: userMsg }
+    ];
+  } else {
+    msgContent = userMsg + '\n\n' + rawInput;
+  }
+
+  abortCtrl = new AbortController();
+  let accumulated = '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: modelId, max_tokens: 8000, stream: true, system: systemPrompt, messages: [{ role: 'user', content: msgContent }] }),
+      signal: abortCtrl.signal
+    });
+
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Errore API'); }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split('\n').filter(l => l.startsWith('data: '))) {
+        const data = line.slice(6);
+        if (data === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(data);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            accumulated += evt.delta.text;
+            renderLive(accumulated);
+          }
+        } catch(_) {}
+      }
+    }
+    finalize(accumulated);
+  } catch(e) {
+    if (e.name === 'AbortError') { if (accumulated) finalize(accumulated); }
+    else showError('Errore: ' + e.message);
+  } finally {
+    document.getElementById('btnTraduci').style.display = '';
+    document.getElementById('btnStop').style.display = 'none';
+    const sb2 = document.getElementById('streamBadge');
+    if (sb2) sb2.style.display = 'none';
+  }
+}
+
+function stopTranslation() { abortCtrl?.abort(); }
+
+function parseOutput(raw) {
+  const isEN = direction === 'EN→IT';
+  const h1 = isEN ? '## TRADUZIONE' : '## TRANSLATION';
+  const h2 = isEN ? '## SINTESI' : '## SUMMARY';
+  const i1 = raw.indexOf(h1), i2 = raw.indexOf(h2);
+  if (i1 !== -1 && i2 !== -1) return { trad: raw.slice(i1+h1.length, i2).trim(), sint: raw.slice(i2+h2.length).trim() };
+  return { trad: raw.trim(), sint: '' };
+}
+
+function renderLive(raw) {
+  const { trad, sint } = parseOutput(raw);
+  if (trad) document.getElementById('outputTrad').innerHTML = renderText(trad);
+  if (sint) document.getElementById('outputSint').innerHTML = renderText(sint);
+}
+
+function finalize(raw) {
+  const { trad, sint } = parseOutput(raw);
+  tradText = trad; sintText = sint;
+  document.getElementById('outputTrad').innerHTML = trad ? renderText(trad) : '<span class="placeholder">Nessun testo.</span>';
+  document.getElementById('outputSint').innerHTML = sint ? renderText(sint) : '<span class="placeholder">Nessuna sintesi.</span>';
+  if (trad) document.getElementById('btnCopyTrad').style.display = '';
+  if (sint) document.getElementById('btnCopySint').style.display = '';
+}
+
+// ---- RENDER TEXT ----
+function renderText(text) {
+  return text.split('\n').map(line => {
+    if (!line.trim()) return '<div class="rt-sp"></div>';
+    if (line.startsWith('### ')) return `<div class="rt-h3">${esc(line.slice(4))}</div>`;
+    if (line.startsWith('## '))  return `<div class="rt-h2">${esc(line.slice(3))}</div>`;
+    if (line.startsWith('# '))   return `<div class="rt-h1">${esc(line.slice(2))}</div>`;
+    if (line.match(/^[-*•]\s/))  return `<div class="rt-li">• ${bold(esc(line.slice(2)))}</div>`;
+    if (line.match(/^\d+\.\s/))  return `<div class="rt-li">${bold(esc(line))}</div>`;
+    return `<div class="rt-p">${bold(esc(line))}</div>`;
+  }).join('');
+}
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function bold(s) { return s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
+
+// ---- COPY ----
+function copySection(key) {
+  const text = key === 'trad' ? tradText : sintText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(key === 'trad' ? 'btnCopyTrad' : 'btnCopySint');
+    btn.textContent = '✓ Copiato';
+    setTimeout(() => btn.textContent = '📋 Copia', 2000);
+  });
+}
+
+// ---- ERROR ----
+function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = '⚠️ ' + msg; b.style.display = ''; }
+function hideError()    { document.getElementById('errorBox').style.display = 'none'; }
+
+// ---- API KEY DIALOG ----
+function checkApiKey() {
+  if (!getApiKey()) showApiDialog();
+}
+function showApiDialog() {
+  document.getElementById('apiOverlay').style.display = 'flex';
+  document.getElementById('apiInput').focus();
+}
+function saveApiKeyFromDialog() {
+  const val = document.getElementById('apiInput').value.trim();
+  if (!val.startsWith('sk-ant-')) { document.getElementById('apiKeyError').style.display=''; return; }
+  saveApiKey(val);
+  document.getElementById('apiOverlay').style.display = 'none';
+  document.getElementById('apiKeyError').style.display = 'none';
+}
+function resetApiKey() {
+  localStorage.removeItem('traduzione_api_key');
+  document.getElementById('apiInput').value = '';
+  showApiDialog();
+}
+
+// ---- INIT ----
+loadPrefs();
+checkApiKey();
+</script>
+</body>
+</html>
